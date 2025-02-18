@@ -271,121 +271,100 @@ class ElectroWand(Weapon):
                     map.map_tiles[y][x].update_char('⚡')
 
             elif offset < 0:
-                # How many times the loop has to increment just y and not x and y
-                cycle_size = math.ceil(y_distance / abs(offset))
 
-                # The minimum amount x can change with single step adjustments 
-                minimum_distance = math.floor(y_distance / 2)
+                # This finds how many more steps y needs to make in addition to the diagonal steps
+                # It subtracts 1 form the y distance so that the lightning will stop just before the character
+                y_steps = (y_distance - 1) - x_distance
 
-                # The variable to hold the amount extra_steps needs to be set to after each set of steps
-                steps_needed = math.floor(minimum_distance / x_distance)
+                # This finds how many diadonal steps are needed for each y step
+                diags_per_y_step = math.floor(x_distance / y_steps)
 
-                # How many extra steps above 1 y needs to take before moving x and y again
-                extra_steps = steps_needed
+                # This finds if there any excess diagonal steps needed that do not distibute evenly amoungst the y steps
+                excess_steps = x_distance % y_steps
 
+                if excess_steps != 0:
+                    # This finds how often those excess steps must be added in each cycle
+                    excess_cycle_size = math.ceil(y_steps / excess_steps)
 
-                try:
-                # Finds how many times there needs to be one more step added to the extra steps
-                # Then, finds the cycle size of how to distribute those one more steps
-                    one_more_step_cycle = math.ceil(y_distance / (minimum_distance % x_distance))
+                else:
+                    # Sets this to 1 because it should NEVER be 1. If it were 1, that would mean an extra step would need
+                    # to be added every cycle. If that were the case, they would be evenly disributed amoungest the y steps
+                    excess_cycle_size = 1
 
-                except ZeroDivisionError:
-                     # Sets this to 1 because it should NEVER be 1.
-                     # If it needed to add an extra step every single cycle, which is what a cycle size of 1 means,
-                     # then there would be no need to distribute "one more" steps because the extra steps takes care of that
-                     one_more_step_cycle = 1
+                # Loop that iterates through just the y steps
+                for i in range(0, y_steps):
+                    y += y_inc # Adds extra steps
+                    map.map_tiles[y][x].update_char('⚡')
 
+                    # Checks if excess steps are needed and if it is the right time in the cycle
+                    if (excess_cycle_size != 1 and i % excess_cycle_size == 0):
+                        diags_per_y_step += 1 #Adds the excess step
 
-                print(f"extra steps = {extra_steps}")
-                for i in range(0, y_distance - 1):
-                
-                    # Checks if there are extra steps needed
-                    if (extra_steps > 0):
-                        
-                        # Checks if we need to add one more step
-                        if (one_more_step_cycle != 1 and i % one_more_step_cycle == 0):
-                            extra_steps += 1    
-
-                        y += y_inc # Adds extra steps
-                        map.map_tiles[y][x].update_char('⚡')
-                        extra_steps -= 1 # Keeps tracks of the extra steps added
-
-                    # Checks if it is time to just increment y or if there are extra steps needed
-                    elif (i % cycle_size == 0):
-                        y += y_inc # increments just y by either - or -1
-                        map.map_tiles[y][x].update_char('⚡')
-
-                    else:
-                        y += y_inc
-                        x+= x_inc
-                        map.map_tiles[y][x].update_char('⚡')
-
-                        # This if block must be here to allow for the else to run...or else extra_steps will never be 0
-                        # Checks if there are extra steps left to use and if they are needed given the minimum distance of x
-                        if (extra_steps == 0 and minimum_distance > x_distance):
-
-                            extra_steps = steps_needed
-
+                    # Prints the map after each step to look like an animation
                     time.sleep(0.03)
                     map.printMap()
 
-
-
-            elif offset < 0:
-                # How many times the loop has to increment just y and not x and y
-                cycle_size = math.ceil(x_distance / abs(offset))
-
-                # The minimum amount y can change with single step adjustments 
-                minimum_distance = math.floor(x_distance / 2)
-
-                # The variable to hold the amount extra_steps needs to be set to after each set of steps
-                steps_needed = math.floor(minimum_distance / y_distance)
-
-                # How many extra steps above 1 x needs to take before moving x and y again
-                extra_steps = steps_needed
-
-                try:
-                # Finds how many times there needs to be one more step added to the extra steps
-                # Then, finds the cycle size of how to distribute those one more steps
-                    one_more_step_cycle = math.ceil(x_distance / (minimum_distance % y_distance))
-
-                except ZeroDivisionError:
-                     # Sets this to 1 because it should NEVER be 1.
-                     # If it needed to add an extra step every single cycle, which is what a cycle size of 1 means,
-                     # then there would be no need to distribute "one more" steps because the extra steps takes care of that
-                     one_more_step_cycle = 1
-
-                for i in range(0, x_distance - 1):
-
-                    # Checks if it is time to just increment y or if there are extra steps needed
-                    if (i % cycle_size == 0 or extra_steps > 0):
-                        x += x_inc # increments just y by either - or -1
-                        map.map_tiles[y][x].update_char('⚡')
-                        
-                        # Checks if there are extra steps needed
-                        if (extra_steps > 0):
-                            x += x_inc # Adds extra steps
-                            map.map_tiles[y][x].update_char('⚡')
-                            extra_steps -= 1 # Keeps tracks of the extra steps added
-
-                    else:
+                    # Loop that iterates through the diagonal steps that are needed in between the x steps
+                    for j in range(0, diags_per_y_step):
                         y += y_inc
-                        x+= x_inc
+                        x += x_inc
                         map.map_tiles[y][x].update_char('⚡')
 
-                        # This if block must be here to allow for the above else to run...or else extra_steps will never be 0
-                        # Checks if there are extra steps left to use and if they are needed given the minimum distance of x
-                        if (extra_steps == 0 and minimum_distance > y_distance):
-                        
-                            # Checks if we need to add one more step
-                            if (one_more_step_cycle != 1 and i % one_more_step_cycle == 0):
-                                extra_steps = steps_needed + 1
+                    # Checks if an excess step was added.
+                    if (excess_cycle_size != 1 and i % excess_cycle_size == 0):
+                        diags_per_y_step -= 1
 
-                        else:
-                            extra_steps = steps_needed
+                     # Prints the map after each step to look like an animation
+                    time.sleep(0.03)
+                    map.printMap()
 
-                    #time.sleep(0.03)
-                    #map.printMap()
+            elif offset > 0:
+
+                # This finds how many more steps x needs to make in addition to the diagonal steps
+                # It subtracts 1 form the x distance so that the lightning will stop just before the character
+                x_steps = (x_distance - 1) - y_distance
+
+                # This finds how many diadonal steps are needed for each x step
+                diags_per_x_step = math.floor(y_distance / x_steps)
+
+                # This finds if there any excess diagonal steps needed that do not distibute evenly amoungst the x steps
+                excess_steps = y_distance % x_steps
+
+                if excess_steps != 0:
+                    # This finds how often those excess steps must be added in each cycle
+                    excess_cycle_size = math.ceil(x_steps / excess_steps)
+
+                else:
+                    # Sets this to 1 because it should NEVER be 1. If it were 1, that would mean an extra step would need
+                    # to be added every cycle. If that were the case, they would be evenly disributed amoungest the y steps
+                    excess_cycle_size = 1
+
+                # Loop that iterates through just the x steps
+                for i in range(0, x_steps):
+                    x += x_inc # Adds extra steps
+                    map.map_tiles[y][x].update_char('⚡')
+
+                    # Checks if excess steps are needed and if it is the right time in the cycle
+                    if (excess_cycle_size != 1 and i % excess_cycle_size == 0):
+                        diags_per_x_step += 1 #Adds the excess step
+
+                    # Prints the map after each step to look like an animation
+                    time.sleep(0.03)
+                    map.printMap()
+
+                    # Loop that iterates through the diagonal steps that are needed in between the x steps
+                    for j in range(0, diags_per_x_step):
+                        y += y_inc
+                        x += x_inc
+                        map.map_tiles[y][x].update_char('⚡')
+
+                    # Checks if an excess step was added.
+                    if (excess_cycle_size != 1 and i % excess_cycle_size == 0):
+                        diags_per_x_step -= 1 # Sets the variable back to its original value so that excess steps don't stack
+
+                    # Prints the map after each step to look like an animation
+                    time.sleep(0.03)
+                    map.printMap()
 
             self.assign_damage(attacker, defender, bonus_damage=self.bonus_damage)
         else:
@@ -495,11 +474,13 @@ def main():
 
   map.createMap(warrior, evil_wizard)
 
-  warrior.move()
+  while True:  
 
-  warrior.attack(evil_wizard)
+    warrior.move()
 
-  evil_wizard.attack(warrior)
+    warrior.attack(evil_wizard)
+
+    evil_wizard.attack(warrior)
     # Character creation phase
    # player = create_character()
 
@@ -509,9 +490,7 @@ def main():
     # Start the battle
   #  battle(player, wizard)
 
-  go = input()
-
-  if go == 'i': warrior.move(map)
+    go = input()
       
 
 if __name__ == "__main__":
