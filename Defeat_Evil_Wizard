@@ -98,14 +98,17 @@ map = Map()
 
 # Base Character class
 class Character:
-    def __init__(self, name, health, attack_power, weapon, movement = 6):
+    def __init__(self, name, health, attack_power, weapon, armor = False, movement = 6):
         self.name = name
         self.health = health
         self.attack_power = attack_power
         self.weapon = weapon
+        self.armor = armor
         self.movement = movement
         self.max_health = health  # Store the original health for maximum limit
         self.max_movement = movement # Store the original movement to allow for a reset
+        self.action_points = 1
+        self.special_ability_charge = 100
         self.__y = random.randint(0, 29)
         self.__x = random.randint(0, 29)
         self.backpack = []
@@ -121,6 +124,19 @@ class Character:
         self.health += 5
         if self.health > self.max_health:
             self.health = self.max_health
+
+    def take_damage(self, damage):
+
+        if self.armor:
+            damage *= 0.75
+            self.health -= round(damage)
+
+        else:
+            self.health -= damage
+
+        return damage
+
+    
 
 
     # Move function that moves the character from one MapTile object to another within the characters max movement
@@ -210,35 +226,37 @@ class Weapon:
     def __str__(self):
         return "<Weapon name>"
     
-    def assign_damage(self, attacker: Character, defender: Character, AP_modifier=1, bonus_damage=0):
-        attack_power = attacker.attack_power * AP_modifier #Modifies the attack power if a weapon provides a modification
+    def assign_damage(self, attacker: Character, defender: Character, ap_modifier=0, bonus_damage=0):
+        attack_power = attacker.attack_power + ap_modifier #Modifies the attack power if a weapon provides a modification
 
         # Randomizes the damage with the attack power as a modifier and adds any bonus damage from a weapon
         # 0-200 because that makes the attack_power the average damage
         damage = round(random.randint(0, 200) * (attack_power*0.01)) + bonus_damage
-        defender.health -= damage
-        print(f"{attacker.name} attacks {defender.name} with {attacker.weapon} for {damage} damage!") 
+        print(f"{attacker.name} attacks {defender.name} with {attacker.weapon} for {defender.take_damage(damage)} damage!") 
 
 class Longsword(Weapon):
     # Attributes
-    ap_modifier = 1.3   # This is how the weapon affects the attack and is unique to each weapon
+    ap_modifier = 15   # This is how the weapon affects the attack and is unique to each weapon
 
     def attack(self, attacker: Character, defender: Character):
         if self.aof.isMelee(attacker, defender): 
 
-            self.assign_damage(attacker, defender, AP_modifier=self.ap_modifier)
+            self.assign_damage(attacker, defender, ap_modifier=self.ap_modifier)
         else:
             print(f"{defender.name} is out of range!")
 
+    def print_stats(self):
+        print("\nLongsword:")
+        print(f"Attack Power Modifier = +{self.ap_modifier}")
+        print(f"Range = Melee")
+
     def __str__(self):
          return "Longsword"
-    
-    # TODO: Print stats method
 
 class ElectroWand(Weapon):
     # Attributes
-    bonus_damage = 20
-    range = 100
+    bonus_damage = 13
+    range = 18
 
     def attack(self, attacker: Character, defender: Character):
         if self.aof.inRange(self.range, attacker, defender):
@@ -372,17 +390,72 @@ class ElectroWand(Weapon):
 
         map.printMap()
 
+    def print_stats(self):
+        print("\nElectro Wand:")
+        print(f"Bonus Damage = +{self.bonus_damage}")
+        print(f"Range = {self.range}")
+
     def __str__(self):
          return "Electro Wand"
+    
+class Claws(Weapon):
+    ap_modifier = 5
+    
+    def attack(self, attacker: Character, defender: Character):
+        if self.aof.isMelee(attacker, defender): 
+
+            self.assign_damage(attacker, defender, ap_modifier=self.ap_modifier)
+        else:
+            print(f"{defender.name} is out of range!")
+
+    def print_stats(self):
+        print("\nClaws:")
+        print(f"Attack Power Modifier = +{self.ap_modifier}")
+        print(f"Range = Melee")
+
+    def __str__(self):
+         return "Claws"
     
 
 
 # Warrior class (inherits from Character)
 class Warrior(Character):
     def __init__(self, name):
-        super().__init__(name, health=140, attack_power=25, weapon=Longsword(), movement=100)  # Boost health and attack power
+        self.shield_uses = 0
+        super().__init__(name, health=140, attack_power=25, weapon=Longsword(), movement=6)  # Boost health and attack power
 
-    # Add your power attack method here
+    def take_damage(self, damage):
+        if self.shield > 0:
+            damage = 0
+            self.shield_uses -= 1
+        
+        else:
+            super().take_damage(damage)
+
+        return damage
+
+    # SPECIAL ABILITIES:
+
+    # This ability allows the Warrior to block the next attack...it can be stacked
+    def shield(self):
+        if (self.special_ability_charge >= 40):
+            self.shield_uses += 1
+            self.special_ability_charge -= 40
+            self.action_points -= 1
+            return True
+        else:
+            print("Not enough ability charge! Pick a different action.")
+            return False
+        
+    # This ability gives the Warrior an extra action
+    def ExtraAction(self):
+        if (self.special_ability_charge == 90):
+            self.action_points += 1
+            self.special_ability_charge -= 90
+            return True
+        else:
+            print("Not enough ability charge! Pick a different action.")
+            return False
 
 
 # Mage class (inherits from Character)
@@ -391,6 +464,13 @@ class Mage(Character):
         super().__init__(name, health=100, attack_power=35, weapon=Longsword(), movement=5)  # Boost attack power
 
     # Add your cast spell method here
+
+# Dragon
+class Dragon(Character):
+    def __init__(self, name):
+        super().__init__(name, health=200, attack_power=45, weapon=Claws(), movement=8)
+
+# Artificer
 
 
 # EvilWizard class (inherits from Character)
@@ -431,28 +511,43 @@ def create_character():
 
 
 # Battle function with user menu for actions
-def battle(player, wizard):
+def battle(player: Character, wizard: Character):
     while wizard.health > 0 and player.health > 0:
+        choice = None
         print("\n--- Your Turn ---")
-        print("1. Attack")
-        print("2. Use Special Ability")
-        print("3. Heal")
-        print("4. View Stats")
-        
-        choice = input("Choose an action: ")
+        while choice == None:
+            choice = re.match(r'[yYnN]', input("Would you like to move? Y/N: "))
+            if choice == None:
+                print("Please type either Y or N ONLY")
 
-        if choice == '1':
-            player.attack(wizard)
-        elif choice == '2':
-            # Call the special ability here
-            pass  # Implement this
-        elif choice == '3':
-            player.heal()
-        elif choice == '4':
-            player.display_stats()
+        if choice.group(0).upper() == 'Y':
+            map.printMap()
+            player.move()
         else:
-            print("Invalid choice, try again.")
-            continue
+            print("Skipping movement!")
+
+        print("\nAction Options:")
+        print("1. Attack (1 action point)")
+        print("2. Use Special Ability (1 action point)")
+        print("3. Heal (1 action point)")
+        print("4. View Stats (0 action points)")
+        print(f"\nAction points = {player.action_points}")
+        
+        while player.action_points > 0:
+            choice = input("Choose an action: ")
+
+            if choice == '1':
+                player.attack(wizard)
+            elif choice == '2':
+                # Call the special ability here
+                pass  # Implement this
+            elif choice == '3':
+                player.heal()
+            elif choice == '4':
+                player.display_stats()
+            else:
+                print("Invalid choice, try again.")
+                continue
 
         # Evil Wizard's turn to attack and regenerate
         if wizard.health > 0:
@@ -474,13 +569,13 @@ def main():
 
   map.createMap(warrior, evil_wizard)
 
-  while True:  
+  #9.2battle(warrior, evil_wizard)
 
-    warrior.move()
+  warrior.move()
 
-    warrior.attack(evil_wizard)
+  warrior.attack(evil_wizard)
 
-    evil_wizard.attack(warrior)
+  evil_wizard.attack(warrior)
     # Character creation phase
    # player = create_character()
 
@@ -489,8 +584,6 @@ def main():
 
     # Start the battle
   #  battle(player, wizard)
-
-    go = input()
       
 
 if __name__ == "__main__":
