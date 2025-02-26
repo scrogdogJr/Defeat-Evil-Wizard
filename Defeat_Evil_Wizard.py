@@ -21,9 +21,8 @@ class MapTile:
         self.update_char()
 
     def update_char(self, char=' •'):
-        if isinstance(self.character, Warrior): self.tile_char = '⚔️ '
-        elif isinstance(self.character, Mage): self.tile_char = '🧝'
-        elif isinstance(self.character, EvilWizard): self.tile_char = '🧙'
+        if (self.character != None): self.tile_char = self.character.char
+        elif (self.item != None): self.tile_char = self.item.char
         else: self.tile_char = char
 
 # Map class manages a list of MapTile objects
@@ -34,12 +33,12 @@ class Map:
 
 
     # Creates and prints the map with the characters. Each map tile's coordinate is stored as the index in the 2D string    
-    def createMap(self, hero, evil_wizard):
+    def createMap(self, player, evil_wizard):
         spaces = '  '
 
         # Makes sure the two characters are not on the same tile
-        while hero.isPositionEqual(evil_wizard.getx(), evil_wizard.gety):
-            hero.setPosition(random.randint(0, 29), random.randint(0, 29))
+        while player.isPositionEqual(evil_wizard.getx(), evil_wizard.gety):
+            player.setPosition(random.randint(0, 29), random.randint(0, 29))
 
         # Print the spaces to account for y coordinate numbers
         print('\n\n   ', end='')
@@ -57,12 +56,15 @@ class Map:
             print(f'\n{y}', end=spaces)
 
             for x in range(30):
-                if hero.isPositionEqual(y, x):
-                    self.map_tiles[y].append(MapTile(x, y, hero))
+                # Checks if this is the coordinate of the player. If so, puts the character in that MapTile
+                if player.isPositionEqual(y, x):
+                    self.map_tiles[y].append(MapTile(x, y, player))
 
+                # Checks if this is the coordinate of the evil_wizard. If so, puts the evil wizard in that MapTile
                 elif evil_wizard.isPositionEqual(y, x):
                     self.map_tiles[y].append(MapTile(x, y, evil_wizard))
 
+                # If there are no characters or items on the coordinate, just makes it a normal tile space.
                 else:
                     self.map_tiles[y].append(MapTile(x, y))
 
@@ -98,8 +100,9 @@ map = Map()
 
 # Base Character class
 class Character:
-    def __init__(self, name, health, attack_power, weapon, armor = False, movement = 6):
+    def __init__(self, name, char, health, attack_power, weapon, armor = False, movement = 6,):
         self.name = name
+        self.char = char
         self.health = health
         self.attack_power = attack_power
         self.weapon = weapon
@@ -199,6 +202,9 @@ class Character:
         self.__y == y
         self.__x == x
 
+class Item:
+    pass
+
 class AreaOfEffect:
 
     # Checks if an attacker is in melee range to a defender
@@ -217,7 +223,14 @@ class AreaOfEffect:
             return False
         
 class Weapon:
+    # Larger scope because only one is needed among all weapons
     aof = AreaOfEffect()
+
+    def __init__(self, range="Melee", ap_modifier=0, bonus_damage=0):
+        # Range will be assumed to be melee unless changed for the particular weapon
+        self.range = range
+        self.ap_modifier = ap_modifier
+        self.bonus_damage = bonus_damage
     @abstractmethod
     def attack(self, attacker: Character, defender: Character):
         pass
@@ -225,6 +238,12 @@ class Weapon:
     @abstractmethod
     def __str__(self):
         return "<Weapon name>"
+    
+    def print_stats(self):
+        print(f"\n{self.__str__()}:")
+        print(f"Attack Power Modifier = +{self.ap_modifier}")
+        print(f"Bonus Damage = +{self.bonus_damage}")
+        print(f"Range: {self.range}")
     
     def assign_damage(self, attacker: Character, defender: Character, ap_modifier=0, bonus_damage=0):
         attack_power = attacker.attack_power + ap_modifier #Modifies the attack power if a weapon provides a modification
@@ -235,8 +254,9 @@ class Weapon:
         print(f"{attacker.name} attacks {defender.name} with {attacker.weapon} for {defender.take_damage(damage)} damage!") 
 
 class Longsword(Weapon):
-    # Attributes
-    ap_modifier = 15   # This is how the weapon affects the attack and is unique to each weapon
+    # Setting Attributes
+    def __init__(self):
+        super().__init__(ap_modifier=15) # This is how the weapon affects the attack and is unique to each weapon
 
     def attack(self, attacker: Character, defender: Character):
         if self.aof.isMelee(attacker, defender): 
@@ -245,18 +265,13 @@ class Longsword(Weapon):
         else:
             print(f"{defender.name} is out of range!")
 
-    def print_stats(self):
-        print("\nLongsword:")
-        print(f"Attack Power Modifier = +{self.ap_modifier}")
-        print(f"Range = Melee")
-
     def __str__(self):
          return "Longsword"
 
 class ElectroWand(Weapon):
-    # Attributes
-    bonus_damage = 13
-    range = 18
+    # Setting Attributes
+    def __init__(self):
+        super().__init__(range=18, bonus_damage=13)
 
     def attack(self, attacker: Character, defender: Character):
         if self.aof.inRange(self.range, attacker, defender):
@@ -335,7 +350,6 @@ class ElectroWand(Weapon):
                      # Prints the map after each step to look like an animation
                     time.sleep(0.03)
                     map.printMap()
-
             elif offset > 0:
 
                 # This finds how many more steps x needs to make in addition to the diagonal steps
@@ -390,31 +404,35 @@ class ElectroWand(Weapon):
 
         map.printMap()
 
-    def print_stats(self):
-        print("\nElectro Wand:")
-        print(f"Bonus Damage = +{self.bonus_damage}")
-        print(f"Range = {self.range}")
-
     def __str__(self):
          return "Electro Wand"
     
 class Claws(Weapon):
-    ap_modifier = 5
+    def __init__(self):
+        super().__init__(ap_modifier=5)
     
     def attack(self, attacker: Character, defender: Character):
         if self.aof.isMelee(attacker, defender): 
-
             self.assign_damage(attacker, defender, ap_modifier=self.ap_modifier)
+
         else:
             print(f"{defender.name} is out of range!")
 
-    def print_stats(self):
-        print("\nClaws:")
-        print(f"Attack Power Modifier = +{self.ap_modifier}")
-        print(f"Range = Melee")
-
     def __str__(self):
          return "Claws"
+    
+class UnarmedStrike(Weapon):
+    # No added modifiers or bonuses
+
+    def attack(self, attacker: Character, defender: Character):
+        if self.aof.isMelee(attacker, defender):
+            self.assign_damage(attacker, defender)
+
+        else:
+            print(f"{defender.name} is out of range!")
+    
+    def __str__(self):
+        return "Unarmed Strike"
     
 
 
@@ -422,7 +440,7 @@ class Claws(Weapon):
 class Warrior(Character):
     def __init__(self, name):
         self.shield_uses = 0
-        super().__init__(name, health=140, attack_power=25, weapon=Longsword(), movement=6)  # Boost health and attack power
+        super().__init__(name, char='🥷 ', health=140, attack_power=25, weapon=Longsword(), movement=6)  # Boost health and attack power
 
     def take_damage(self, damage):
         if self.shield > 0:
@@ -442,16 +460,18 @@ class Warrior(Character):
             self.shield_uses += 1
             self.special_ability_charge -= 40
             self.action_points -= 1
+            print("Shield Engaged!")
             return True
         else:
             print("Not enough ability charge! Pick a different action.")
             return False
         
     # This ability gives the Warrior an extra action
-    def ExtraAction(self):
-        if (self.special_ability_charge == 90):
+    def extra_action(self):
+        if (self.special_ability_charge >= 90):
             self.action_points += 1
             self.special_ability_charge -= 90
+            print("Extra Action Added!")
             return True
         else:
             print("Not enough ability charge! Pick a different action.")
@@ -461,22 +481,25 @@ class Warrior(Character):
 # Mage class (inherits from Character)
 class Mage(Character):
     def __init__(self, name):
-        super().__init__(name, health=100, attack_power=35, weapon=Longsword(), movement=5)  # Boost attack power
+        super().__init__(name, char='🧝', health=100, attack_power=35, weapon=Longsword(), movement=5)  # Boost attack power
 
     # Add your cast spell method here
 
-# Dragon
+# Dragon (inherits from Character)
 class Dragon(Character):
     def __init__(self, name):
-        super().__init__(name, health=200, attack_power=45, weapon=Claws(), movement=8)
+        super().__init__(name, char='🐲', health=200, attack_power=45, weapon=Claws(), movement=9)
 
-# Artificer
+# Artificer (inherits from Character)
+class Artificer(Character):
+    def __init__(self, name):
+        super().__init__(name, char="👷", health=170, attack_power=30, weapon=UnarmedStrike(), movement=8)
 
 
 # EvilWizard class (inherits from Character)
 class EvilWizard(Character):
     def __init__(self, name):
-        super().__init__(name, health=150, attack_power=15, weapon=ElectroWand(), movement=7)  # Lower attack power
+        super().__init__(name, char='🧙', health=150, attack_power=15, weapon=ElectroWand(), movement=7)  # Lower attack power
     
     # Evil Wizard's special ability: it can regenerate health
     def regenerate(self):
@@ -564,18 +587,18 @@ def battle(player: Character, wizard: Character):
 # Main function to handle the flow of the game
 def main():
 
-  warrior = Warrior('Aragorn')
+  artificer = Artificer('Clank')
   evil_wizard = EvilWizard('Merlock')
 
-  map.createMap(warrior, evil_wizard)
+  map.createMap(artificer, evil_wizard)
 
   #9.2battle(warrior, evil_wizard)
 
-  warrior.move()
+  artificer.move()
 
-  warrior.attack(evil_wizard)
+  artificer.attack(evil_wizard)
 
-  evil_wizard.attack(warrior)
+  evil_wizard.attack(artificer)
     # Character creation phase
    # player = create_character()
 
