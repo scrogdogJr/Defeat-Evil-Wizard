@@ -4,6 +4,30 @@ import math
 from abc import ABC, abstractmethod
 import time
 
+class Item:
+    # Items will be stored in a character's backpack which is a dictionary.
+    # Each key will be the char (emoji representaiton) of the item
+    # The value will represent how many of that item a character has
+    def __init__(self, char):
+        self.char = char
+
+    
+class Stone(Item):
+    def __init__(self):
+        super().__init__('🪨 ')
+
+class Gem(Item):
+    def __init__(self):
+        super().__init__('💎')
+
+class Wood(Item):
+    def __init__(self):
+        super().__init__('🪵 ')
+
+class Herb(Item):
+    def __init__(self):
+        super().__init__('🌿')
+
 # MapTile class that holds all the necessary data and methods for an individual tile
 class MapTile:
     def __init__(self, y, x, character = None, item = None):
@@ -27,6 +51,9 @@ class MapTile:
 
 # Map class manages a list of MapTile objects
 class Map:
+    raw_materials = (Stone(), Gem(), Wood(), Herb(), None)
+    weights = (15, 5, 20, 10, 50)
+
     def __init__(self):
         # BE CAREFUL! The y coordinate goes first when this becomes a 2D list
         self.map_tiles = []
@@ -56,17 +83,21 @@ class Map:
             print(f'\n{y}', end=spaces)
 
             for x in range(30):
+
+                item = random.choices(self.raw_materials, self.weights, k=1)
+
+                random.choice
                 # Checks if this is the coordinate of the player. If so, puts the character in that MapTile
                 if player.isPositionEqual(y, x):
-                    self.map_tiles[y].append(MapTile(x, y, player))
+                    self.map_tiles[y].append(MapTile(x, y, player, item[0]))
 
                 # Checks if this is the coordinate of the evil_wizard. If so, puts the evil wizard in that MapTile
                 elif evil_wizard.isPositionEqual(y, x):
-                    self.map_tiles[y].append(MapTile(x, y, evil_wizard))
+                    self.map_tiles[y].append(MapTile(x, y, evil_wizard, item[0]))
 
                 # If there are no characters or items on the coordinate, just makes it a normal tile space.
                 else:
-                    self.map_tiles[y].append(MapTile(x, y))
+                    self.map_tiles[y].append(MapTile(x, y, item=item[0]))
 
                 # Be CAREFUL! The y coordinate goes first
                 print(f"{self.map_tiles[y][x].tile_char} ", end='')
@@ -114,7 +145,7 @@ class Character:
         self.special_ability_charge = 100
         self.__y = random.randint(0, 29)
         self.__x = random.randint(0, 29)
-        self.backpack = []
+        self.backpack = {}
         self.right_hand = None # Stores what left hand is holding
         self.leftHand = None # Stores what right hand is holding
 
@@ -202,8 +233,6 @@ class Character:
         self.__y == y
         self.__x == x
 
-class Item:
-    pass
 
 class AreaOfEffect:
 
@@ -435,6 +464,8 @@ class UnarmedStrike(Weapon):
         return "Unarmed Strike"
     
 
+# CHARACTER SUBCLASSES
+
 
 # Warrior class (inherits from Character)
 class Warrior(Character):
@@ -443,7 +474,7 @@ class Warrior(Character):
         super().__init__(name, char='🥷 ', health=140, attack_power=25, weapon=Longsword(), movement=6)  # Boost health and attack power
 
     def take_damage(self, damage):
-        if self.shield > 0:
+        if self.shield_uses > 0:
             damage = 0
             self.shield_uses -= 1
         
@@ -477,7 +508,6 @@ class Warrior(Character):
             print("Not enough ability charge! Pick a different action.")
             return False
 
-
 # Mage class (inherits from Character)
 class Mage(Character):
     def __init__(self, name):
@@ -490,10 +520,11 @@ class Dragon(Character):
     def __init__(self, name):
         super().__init__(name, char='🐲', health=200, attack_power=45, weapon=Claws(), movement=9)
 
+
 # Artificer (inherits from Character)
 class Artificer(Character):
     def __init__(self, name):
-        super().__init__(name, char="👷", health=170, attack_power=30, weapon=UnarmedStrike(), movement=8)
+        super().__init__(name, char='🧑‍🏭', health=170, attack_power=30, weapon=UnarmedStrike(), movement=8)
 
 
 # EvilWizard class (inherits from Character)
@@ -504,7 +535,7 @@ class EvilWizard(Character):
     # Evil Wizard's special ability: it can regenerate health
     def regenerate(self):
         self.health += 5  # Lower regeneration amount
-        print(f"{self.name} regenerates 5 health! Current health: {self.health}")                                      
+        print(f"{self.name} regenerates 5 health! Current health: {self.health}")                         
 
 # Function to create player character based on user input
 def create_character():
@@ -587,7 +618,7 @@ def battle(player: Character, wizard: Character):
 # Main function to handle the flow of the game
 def main():
 
-  artificer = Artificer('Clank')
+  artificer = Warrior('Clank')
   evil_wizard = EvilWizard('Merlock')
 
   map.createMap(artificer, evil_wizard)
