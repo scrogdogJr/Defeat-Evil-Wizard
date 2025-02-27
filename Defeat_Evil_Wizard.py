@@ -46,7 +46,7 @@ class MapTile:
 
     def update_char(self, char=' •'):
         if (self.character != None): self.tile_char = self.character.char
-        elif (self.item != None): self.tile_char = self.item.char
+        # elif (self.item != None): self.tile_char = self.item.char
         else: self.tile_char = char
 
 # Map class manages a list of MapTile objects
@@ -618,7 +618,7 @@ def battle(player: Character, wizard: Character):
 # Main function to handle the flow of the game
 def main():
 
-  artificer = Warrior('Clank')
+  artificer = Artificer('Clank')
   evil_wizard = EvilWizard('Merlock')
 
   map.createMap(artificer, evil_wizard)
