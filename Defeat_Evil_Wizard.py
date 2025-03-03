@@ -9,32 +9,130 @@ class Item:
     # Each key will be the char (emoji representaiton) of the item
     # The value will represent how many of that item a character has
     def __init__(self, char):
-        self.char = char
+        self.char = ' ' + char
 
     
 class Stone(Item):
     def __init__(self):
         super().__init__('🪨 ')
 
+    def __str__(self):
+        return "🪨  (Stone)"
+
 class Gem(Item):
     def __init__(self):
         super().__init__('💎')
+
+    def __str__(self):
+        return "💎 (Diamond)"
 
 class Wood(Item):
     def __init__(self):
         super().__init__('🪵 ')
 
+    def __str__(self):
+        return "🪵  (Wood)"
+
 class Herb(Item):
     def __init__(self):
         super().__init__('🌿')
 
+    def __str__(self):
+        return "🌿 (Herb)"
+
+class Maple(Item):
+    def __init__(self):
+        super().__init__('🍁')
+
+    def __str__(self):
+        return "🍁 (Maple Leaf)"
+
+class Ice(Item):
+    def __init__(self):
+        super().__init__('🧊')
+
+    def __str__(self):
+        return "🧊 (Ice)"
+
+class Water(Item):
+    def __init__(self):
+        super().__init__('💧')
+
+    def __str__(self):
+        return "💧 (Water)"
+
+class LadyBug(Item):
+    def __init__(self):
+        super().__init__('🐞')
+
+    def __str__(self):
+        return "🐞 (Lady Bug)"
+
+class Dirt(Item):
+    def __init__(self):
+        super().__init__('🟤')
+
+    def __str__(self):
+        return "🟤 (Dirt)"
+
+class Sunflower(Item):
+    def __init__(self):
+        super().__init__('🌻')
+
+    def __str__(self):
+        return "🌻 (Sunflower)"
+    
+class AreaOfEffect:
+
+    # Checks if an attacker is in melee range to a defender
+    def isMelee(self, attacker, defender):
+        if attacker.getx() == defender.getx() - 1 or attacker.getx() == defender.getx() + 1 or attacker.gety() == defender.gety() - 1 or attacker.gety() == defender.gety() + 1:
+            return True
+        else:
+            return False
+        
+    def inRange(self, range, attacker, defender):
+        distance = round(math.hypot(attacker.getx() - defender.getx(), attacker.gety() - defender.gety()))
+
+        if distance <= range:
+            return True
+        else:
+            return False
+        
+    def findSightRange(self, character, sight_radius=1):
+        x_start = max(character.getx() - sight_radius, 0)
+        x_end = min(character.getx() + sight_radius, 29)
+        y_start = max(character.gety() - sight_radius, 0)
+        y_end = min(character.gety() + sight_radius, 29)
+
+        return x_start, x_end, y_start, y_end
+
+    def inSight(self, x, y, character, sight_radius=1):
+        # Creates a rannge of coordinates around the intended character with the defined radius
+        x_start, x_end, y_start, y_end = self.findSightRange(character, sight_radius) 
+
+        # If the coordinate is within both the x and y range, then the coordinate is in sight
+        if x in range(x_start, x_end + 1) and y in range(y_start, y_end + 1):
+            return True
+
+        # Else, the coordinate is not in sight
+        else:
+            return False
+        
+'''There is one AreaOfEffect object because so many classes need to access it'''
+aof = AreaOfEffect()
+
+
 # MapTile class that holds all the necessary data and methods for an individual tile
 class MapTile:
-    def __init__(self, y, x, character = None, item = None):
+    def __init__(self, x, y , character = None, item = None, showItem=False):
+        self.tile_char = ' •'
         self.item = item
         self.character = character
+        self.x = x
+        self.y = y
 
-        self.update_char()
+        self.update_char(showItem=showItem)
 
     def remove_character(self):
         self.character = None
@@ -44,15 +142,22 @@ class MapTile:
         self.character = character
         self.update_char()
 
-    def update_char(self, char=' •'):
-        if (self.character != None): self.tile_char = self.character.char
-        # elif (self.item != None): self.tile_char = self.item.char
-        else: self.tile_char = char
+
+    def update_char(self, char=' •', showItem=False):
+        if (self.character != None): 
+            if isinstance(self.character, Artificer) and self.item != None:
+                self.tile_char = self.character.char[1:] + self.item.char[1:]
+            else:
+                self.tile_char = self.character.char
+        elif (self.item != None and showItem == True):
+            self.tile_char = self.item.char
+        else: self.tile_char = ' ' + char
 
 # Map class manages a list of MapTile objects
 class Map:
-    raw_materials = (Stone(), Gem(), Wood(), Herb(), None)
-    weights = (15, 5, 20, 10, 50)
+
+    raw_materials = (Stone(), Gem(), Wood(), Herb(), Maple(), Ice(), Water(), LadyBug(), Dirt(), Sunflower(),  None)
+    weights = (7, 0.5, 7.5, 3, 3, 2, 4, 3.5, 5.5, 3, 60)
 
     def __init__(self):
         # BE CAREFUL! The y coordinate goes first when this becomes a 2D list
@@ -68,7 +173,7 @@ class Map:
             player.setPosition(random.randint(0, 29), random.randint(0, 29))
 
         # Print the spaces to account for y coordinate numbers
-        print('\n\n   ', end='')
+        print('\n\n    ', end='')
 
         # Prints the x coordinate numbers
         for x in range(30):
@@ -85,26 +190,46 @@ class Map:
             for x in range(30):
 
                 item = random.choices(self.raw_materials, self.weights, k=1)
+                showItem = isinstance(player, Artificer) and aof.inSight(x, y, player) 
 
                 random.choice
                 # Checks if this is the coordinate of the player. If so, puts the character in that MapTile
                 if player.isPositionEqual(y, x):
-                    self.map_tiles[y].append(MapTile(x, y, player, item[0]))
+                    self.map_tiles[y].append(MapTile(x, y, player, item[0], showItem))
+                    player_item = item[0]
 
                 # Checks if this is the coordinate of the evil_wizard. If so, puts the evil wizard in that MapTile
                 elif evil_wizard.isPositionEqual(y, x):
-                    self.map_tiles[y].append(MapTile(x, y, evil_wizard, item[0]))
+                    self.map_tiles[y].append(MapTile(x, y, evil_wizard, item[0], showItem))
 
                 # If there are no characters or items on the coordinate, just makes it a normal tile space.
                 else:
-                    self.map_tiles[y].append(MapTile(x, y, item=item[0]))
+                    self.map_tiles[y].append(MapTile(x, y, item=item[0], showItem=showItem))
 
-                # Be CAREFUL! The y coordinate goes first
-                print(f"{self.map_tiles[y][x].tile_char} ", end='')
+                # Checks if the player is an Artificer, if the current tile is to the right of the player, and if
+                # there is an item on the players tile. If so, it takes away the leading space of the tile to the 
+                # right of the artificer for formatting purposes
+                if showItem and player.isPositionEqual(y, x - 1) and player_item != None:
+                    self.map_tiles[y][x].tile_char = self.map_tiles[y][x].tile_char[1:]
+
+                print(f"{self.map_tiles[y][x].tile_char}", end='')
         print("\n\n")
 
+    def updateMap(self, player):
+        # Checks if the player is the Artificer. If so, it will check if items are in sight
+        if isinstance(player, Artificer):
+            for y in range(30):
+                for x in range(30):
+                    # Will update the char on the map and show the item if it is in sight of the Artificer
+                    self.map_tiles[y][x].update_char(showItem=aof.inSight(x, y, player))
+        else:
+            for y in range(30):
+                for x in range(30):
+                    # Be CAREFUL! The y coordinate goes first
+                    self.map_tiles[y][x].update_char()
+
     # Only Prints the map
-    def printMap(self):
+    def printMap(self, player):
         spaces = '  '
         # Print the spaces to account for y coordinate numbers
         print('\n\n   ', end='')
@@ -121,8 +246,12 @@ class Map:
             print(f'\n{y}', end=spaces)
 
             for x in range(30):
+
+                if isinstance(player, Artificer) and player.isPositionEqual(y, x - 1) and self.map_tiles[y][x - 1].item != None:
+                    self.map_tiles[y][x].tile_char = self.map_tiles[y][x].tile_char[1:]
+
                 # Be CAREFUL! The y coordinate goes first
-                print(f"{self.map_tiles[y][x].tile_char} ", end='')
+                print(f"{self.map_tiles[y][x].tile_char}", end='')
         print("\n\n")
 
 '''THIS IS THE ONE MAP OF THE GAME!!!! It is global because so many things need to access it'''
@@ -131,9 +260,9 @@ map = Map()
 
 # Base Character class
 class Character:
-    def __init__(self, name, char, health, attack_power, weapon, armor = False, movement = 6,):
+    def __init__(self, name, char, health, attack_power, weapon, armor = False, movement = 6):
         self.name = name
-        self.char = char
+        self.char = ' ' + char
         self.health = health
         self.attack_power = attack_power
         self.weapon = weapon
@@ -145,12 +274,13 @@ class Character:
         self.special_ability_charge = 100
         self.__y = random.randint(0, 29)
         self.__x = random.randint(0, 29)
-        self.backpack = {}
+        self.backpack = dict()
         self.right_hand = None # Stores what left hand is holding
         self.leftHand = None # Stores what right hand is holding
 
     def attack(self, opponent):
         self.weapon.attack(self, opponent)
+        
 
         
     # Restores 5 health up to the maximum
@@ -205,12 +335,14 @@ class Character:
                 self.__x = x
                 self.__y = y
                 self.movement -= distance
+
+                if isinstance(self, Artificer): map.updateMap(player=self)
                 break
 
             else:
                 print("Cannot move onto another character! Please enter new coordinates!")
 
-        map.printMap()
+        map.printMap(player=self)
 
     # TODO: ADD OTHER STATS
     def display_stats(self):
@@ -233,27 +365,8 @@ class Character:
         self.__y == y
         self.__x == x
 
-
-class AreaOfEffect:
-
-    # Checks if an attacker is in melee range to a defender
-    def isMelee(self, attacker: Character, defender: Character):
-        if attacker.getx() == defender.getx() - 1 or attacker.getx() == defender.getx() + 1 or attacker.gety() == defender.gety() - 1 or attacker.gety() == defender.gety() + 1:
-            return True
-        else:
-            return False
-        
-    def inRange(self, range, attacker: Character, defender: Character):
-        distance = round(math.hypot(attacker.getx() - defender.getx(), attacker.gety() - defender.gety()))
-
-        if distance <= range:
-            return True
-        else:
-            return False
         
 class Weapon:
-    # Larger scope because only one is needed among all weapons
-    aof = AreaOfEffect()
 
     def __init__(self, range="Melee", ap_modifier=0, bonus_damage=0):
         # Range will be assumed to be melee unless changed for the particular weapon
@@ -288,7 +401,7 @@ class Longsword(Weapon):
         super().__init__(ap_modifier=15) # This is how the weapon affects the attack and is unique to each weapon
 
     def attack(self, attacker: Character, defender: Character):
-        if self.aof.isMelee(attacker, defender): 
+        if aof.isMelee(attacker, defender): 
 
             self.assign_damage(attacker, defender, ap_modifier=self.ap_modifier)
         else:
@@ -303,7 +416,11 @@ class ElectroWand(Weapon):
         super().__init__(range=18, bonus_damage=13)
 
     def attack(self, attacker: Character, defender: Character):
-        if self.aof.inRange(self.range, attacker, defender):
+        # Figures out who the player is for map purposes
+        if isinstance(attacker, EvilWizard): player = defender
+        else: player = attacker
+
+        if aof.inRange(self.range, attacker, defender):
 
             x = attacker.getx()
             y = attacker.gety()
@@ -364,7 +481,7 @@ class ElectroWand(Weapon):
 
                     # Prints the map after each step to look like an animation
                     time.sleep(0.03)
-                    map.printMap()
+                    map.printMap(player=player)
 
                     # Loop that iterates through the diagonal steps that are needed in between the x steps
                     for j in range(0, diags_per_y_step):
@@ -378,7 +495,7 @@ class ElectroWand(Weapon):
 
                      # Prints the map after each step to look like an animation
                     time.sleep(0.03)
-                    map.printMap()
+                    map.printMap(player)
             elif offset > 0:
 
                 # This finds how many more steps x needs to make in addition to the diagonal steps
@@ -411,7 +528,7 @@ class ElectroWand(Weapon):
 
                     # Prints the map after each step to look like an animation
                     time.sleep(0.03)
-                    map.printMap()
+                    map.printMap(player)
 
                     # Loop that iterates through the diagonal steps that are needed in between the x steps
                     for j in range(0, diags_per_x_step):
@@ -425,13 +542,16 @@ class ElectroWand(Weapon):
 
                     # Prints the map after each step to look like an animation
                     time.sleep(0.03)
-                    map.printMap()
+                    map.printMap(player)
 
             self.assign_damage(attacker, defender, bonus_damage=self.bonus_damage)
         else:
             print(f"{defender.name} is out of range!")
 
-        map.printMap()
+        time.sleep(5)
+        map.updateMap(player)
+
+        map.printMap(player)
 
     def __str__(self):
          return "Electro Wand"
@@ -441,7 +561,7 @@ class Claws(Weapon):
         super().__init__(ap_modifier=5)
     
     def attack(self, attacker: Character, defender: Character):
-        if self.aof.isMelee(attacker, defender): 
+        if aof.isMelee(attacker, defender): 
             self.assign_damage(attacker, defender, ap_modifier=self.ap_modifier)
 
         else:
@@ -454,7 +574,7 @@ class UnarmedStrike(Weapon):
     # No added modifiers or bonuses
 
     def attack(self, attacker: Character, defender: Character):
-        if self.aof.isMelee(attacker, defender):
+        if aof.isMelee(attacker, defender):
             self.assign_damage(attacker, defender)
 
         else:
@@ -500,7 +620,7 @@ class Warrior(Character):
     # This ability gives the Warrior an extra action
     def extra_action(self):
         if (self.special_ability_charge >= 90):
-            self.action_points += 1
+            self.action_points += 2
             self.special_ability_charge -= 90
             print("Extra Action Added!")
             return True
@@ -526,6 +646,28 @@ class Artificer(Character):
     def __init__(self, name):
         super().__init__(name, char='🧑‍🏭', health=170, attack_power=30, weapon=UnarmedStrike(), movement=8)
 
+    def pick_up_item(self):
+        x_start, x_end, y_start, y_end = aof.findSightRange(self)
+        available_items = dict()
+        item = None
+
+        # Loops through the items in sight and adds them to a dictionary
+        # The keys are the items and the values are how many there are
+        for y in range(y_start, y_end + 1):
+             for x in range(x_start, x_end + 1):
+                 item =  map.map_tiles[y][x].item
+                 if item != None:
+                    if item not in available_items:
+                        available_items[item] = 1
+                    else:
+                        available_items[item] += 1
+
+        print("\nWhat item would you like to pick up?")
+        for key, value in available_items.items():
+            print(f"• {key}: x{value}")
+             
+
+
 
 # EvilWizard class (inherits from Character)
 class EvilWizard(Character):
@@ -542,8 +684,8 @@ def create_character():
     print("Choose your character class:")
     print("1. Warrior")
     print("2. Mage")
-    print("3. Archer")  # Add Archer
-    print("4. Paladin")  # Add Paladin
+    print("3. Dragon")  # Add Dragon
+    print("4. Artificer")  # Add Artificer
     
     class_choice = input("Enter the number of your class choice: ")
     name = input("Enter your character's name: ")
@@ -575,7 +717,7 @@ def battle(player: Character, wizard: Character):
                 print("Please type either Y or N ONLY")
 
         if choice.group(0).upper() == 'Y':
-            map.printMap()
+            map.printMap(player)
             player.move()
         else:
             print("Skipping movement!")
@@ -624,6 +766,8 @@ def main():
   map.createMap(artificer, evil_wizard)
 
   #9.2battle(warrior, evil_wizard)
+
+  artificer.pick_up_item()
 
   artificer.move()
 
