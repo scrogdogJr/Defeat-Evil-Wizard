@@ -1580,6 +1580,11 @@ def battle(player: Character, wizard: Character):
 # Main function to handle the flow of the game
 def main():
 
+    print("\n\nWELCOME TO DEFEAT THE EVIL WIZARD!!! \n\nIn this game, you will choose from four character classes with their own unique abilities \n" \
+    "" \
+    "to battle the Evil Wizard. May the odds be ever in your favor...")
+    input("\n\nPress Enter to continue...")
+
     # Character creation phase
     player = create_character()
 
