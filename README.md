@@ -4,7 +4,7 @@ This game is a functional RPG game with a 30x30 game board. A player can pick fr
 # Getting Started
 ## Installation
 #### 1. Clone the repo
-  `git clone https://github.com/scrogdogJr/Defeat-Evil_Wizard.git`
+  `git clone https://github.com/scrogdogJr/Defeat-Evil-Wizard.git`
 #### 2. Change git remote url to avoid accidental pushes to the base project
   ```
   git remote set-url origin github_username/repo_name
@@ -71,4 +71,4 @@ This game is a functional RPG game with a 30x30 game board. A player can pick fr
 
 ## Contact 
 Email - anthony7101@cox.net\
-Project link: https://github.com/scrogdogJr/Defeat-Evil_Wizard.git
+Project link: https://github.com/scrogdogJr/Defeat-Evil-Wizard
