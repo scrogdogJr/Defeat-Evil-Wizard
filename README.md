@@ -70,5 +70,5 @@ This game is a functional RPG game with a 30x30 game board. A player can pick fr
 - Animation for ranged weapons that shows the respective emoji for the weapon type going from the attacker to the defender. It always finds the path.
 
 ## Contact 
-Email - anthony7101@cox.net/
+Email - anthony7101@cox.net\
 Project link: https://github.com/scrogdogJr/Defeat-Evil_Wizard.git
