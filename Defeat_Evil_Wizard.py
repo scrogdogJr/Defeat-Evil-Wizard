@@ -975,7 +975,7 @@ class Dragon(Character):
 # Artificer (inherits from Character)
 class Artificer(Character):
     def __init__(self, name):
-        super().__init__(name, char='👷', health=170, attack_power=30, weapon=UnarmedStrike(), movement=100)
+        super().__init__(name, char='👷', health=170, attack_power=30, weapon=UnarmedStrike(), movement=10)
 
 
     # SPECIFIC ACTIONS
