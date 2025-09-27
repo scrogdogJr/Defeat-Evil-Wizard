@@ -1,4 +1,5 @@
-import Item
+from items.Item import Item
+from characters.Character import Character
 import time
 import random
 from abc import abstractmethod

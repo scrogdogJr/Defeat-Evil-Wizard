@@ -1,5 +1,5 @@
 from .Character import Character
-from items import Longsword
+from items.weapons.Longsword import Longsword
 
 # Warrior class (inherits from Character)
 class Warrior(Character):

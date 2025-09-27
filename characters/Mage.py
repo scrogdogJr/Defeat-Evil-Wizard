@@ -1,5 +1,5 @@
 from .Character import Character
-from items import GlintstoneStaff
+from items.weapons.GlintstoneStaff import GlintstoneStaff
 
 # Mage class (inherits from Character)
 class Mage(Character):

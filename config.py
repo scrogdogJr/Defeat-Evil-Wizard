@@ -1,5 +1,5 @@
-from map import Map
-import AreaOfEffect
+from map.Map import Map
+from .AreaOfEffect import AreaOfEffect
 
 MAP = Map()
 

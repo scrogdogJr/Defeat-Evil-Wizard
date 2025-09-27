@@ -1,11 +1,13 @@
-import Weapon
+from .Weapon import Weapon
 from characters import Character
-import AreaOfEffect
-from craftingMaterials import Wood, Gem, Stone
+import config
+from items.craftingMaterials.Wood import Wood
+from items.craftingMaterials.Gem import Gem
+from items.craftingMaterials.Stone import Stone
 
 class GlintstoneStaff(Weapon):
 
-    aof = AreaOfEffect()
+    aof = config.AOF
 
     def __init__(self):
         super().__init__(char='🪄 ', craft_cost={Wood: 2, Gem: 1, Stone: 1}, range=14, bonus_damage=10)

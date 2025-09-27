@@ -1,6 +1,7 @@
-import Weapon
+from .Weapon import Weapon
+from characters.Character import Character
 import AreaOfEffect
-from craftingMaterials import Stone
+from items.craftingMaterials.Stone import Stone
 
 class Longsword(Weapon):
     # Setting Attributes
