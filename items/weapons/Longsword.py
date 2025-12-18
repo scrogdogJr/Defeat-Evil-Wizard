@@ -1,5 +1,11 @@
+from typing import TYPE_CHECKING
 from .Weapon import Weapon
-from characters.Character import Character
+
+
+if TYPE_CHECKING:
+    from characters import Character
+    
+
 import AreaOfEffect
 from items.craftingMaterials.Stone import Stone
 
@@ -8,7 +14,7 @@ class Longsword(Weapon):
     def __init__(self):
         super().__init__('🗡️ ', craft_cost={Stone: 2}, ap_modifier=15) # This is how the weapon affects the attack and is unique to each weapon
 
-    def attack(self, attacker: Character, defender: Character):
+    def attack(self, attacker: 'Character', defender: 'Character'):
         aof = AreaOfEffect()
         if aof.isMelee(attacker, defender): 
 

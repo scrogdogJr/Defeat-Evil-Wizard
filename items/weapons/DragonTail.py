@@ -1,16 +1,18 @@
-import Weapon
-from characters import Character
+from typing import TYPE_CHECKING
+from .Weapon import Weapon
 import AreaOfEffect
 
-class DragonTail(Weapon):
+if TYPE_CHECKING:
+    from characters import Character
 
-    aof = AreaOfEffect()
+class DragonTail(Weapon):
 
     def __init__(self):
         super().__init__(range=10, ap_modifier=7)
 
-    def attack(self, attacker: Character, defender: Character):
-        if self.aof.inRange(self.range, attacker, defender):
+    def attack(self, attacker: 'Character', defender: 'Character'):
+        aof = AreaOfEffect()
+        if aof.inRange(self.range, attacker, defender):
             
             defender.max_movement = defender.max_movement * -1
 

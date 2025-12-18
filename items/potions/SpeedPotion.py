@@ -1,5 +1,5 @@
-import CraftableItem
-from craftableItems import Water, LadyBug
+from items.CraftableItem import CraftableItem
+from items.craftingMaterials import Water, Ladybug
 
 class SpeedPotion(CraftableItem):
     def __init__(self):

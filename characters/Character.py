@@ -4,7 +4,6 @@ import time
 import re
 import math
 from abc import abstractmethod
-import config
 
 class Character:
     def __init__(self, name, char, health, attack_power, weapon, armor = False, movement = 6):

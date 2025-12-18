@@ -1,4 +1,4 @@
-import Item
+from .Item import Item
 from abc import abstractmethod
 
 class CraftableItem(Item):

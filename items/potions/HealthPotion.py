@@ -1,5 +1,5 @@
-import CraftableItem
-from craftingMaterials import Water, Dirt, Herb
+from items.CraftableItem import CraftableItem
+from items.craftingMaterials import Water, Dirt, Herb
 
 class HealthPotion(CraftableItem):
     def __init__(self):

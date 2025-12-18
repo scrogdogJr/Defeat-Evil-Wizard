@@ -1,16 +1,18 @@
-import Weapon
-from characters import Character
+from typing import TYPE_CHECKING
+from .Weapon import Weapon
 import AreaOfEffect
 
-class Claws(Weapon):
+if TYPE_CHECKING:
+    from characters import Character
 
-    aof = AreaOfEffect()
+class Claws(Weapon):
 
     def __init__(self):
         super().__init__(ap_modifier=5)
     
-    def attack(self, attacker: Character, defender: Character):
-        if self.aof.isMelee(attacker, defender): 
+    def attack(self, attacker: 'Character', defender: 'Character'):
+        aof = AreaOfEffect.AreaOfEffect()
+        if aof.isMelee(attacker, defender): 
             self.assign_damage(attacker, defender, ap_modifier=self.ap_modifier)
             return True
 

@@ -1,9 +1,14 @@
+from typing import TYPE_CHECKING
 from items.Item import Item
-from characters.Character import Character
 import time
 import random
 from abc import abstractmethod
 import math
+
+if TYPE_CHECKING:
+    from characters.Character import Character
+    from characters.EvilWizard import EvilWizard
+
 
 class Weapon(Item):
 
@@ -15,7 +20,7 @@ class Weapon(Item):
         self.bonus_damage = bonus_damage
 
     @abstractmethod
-    def attack(self, attacker: Character, defender: Character):
+    def attack(self, attacker: 'Character', defender: 'Character'):
         pass
 
     @abstractmethod
@@ -28,7 +33,7 @@ class Weapon(Item):
         print(f"    • Bonus Damage: +{self.bonus_damage}")
         print(f"    • Range: {self.range}")
     
-    def assign_damage(self, attacker: Character, defender: Character, ap_modifier=0, bonus_damage=0):
+    def assign_damage(self, attacker: 'Character', defender: 'Character', ap_modifier=0, bonus_damage=0):
         attack_power = attacker.attack_power + ap_modifier #Modifies the attack power if a weapon provides a modification
 
         # Randomizes the damage with the attack power as a modifier and adds any bonus damage from a weapon
@@ -38,7 +43,7 @@ class Weapon(Item):
         print(f"{attacker.name} attacks {defender.name} with {attacker.weapon} for {defender.take_damage(damage)} damage!")
         print(f'Ability Charge increased by {round(damage * 0.25)}!')
 
-    def ranged_animation (self, char: str, attacker: Character, defender: Character):
+    def ranged_animation (self, char: str, attacker: 'Character', defender: 'Character'):
         # Figures out who the player is for map purposes
         if isinstance(attacker, EvilWizard): player = defender
         else: player = attacker

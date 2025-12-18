@@ -1,5 +1,5 @@
-import CraftableItem
-from craftingMaterials import Water, Maple
+from items.CraftableItem import CraftableItem
+from items.craftingMaterials import Water, Maple
 
 class AttackPowerPotion(CraftableItem):
     def __init__(self):

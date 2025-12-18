@@ -1,4 +1,7 @@
-from characters import Artificer
+from typing import TYPE_CHECKING
+from characters.Artificer import Artificer
+    
+
 
 # MapTile class that holds all the necessary data and methods for an individual tile
 class MapTile:

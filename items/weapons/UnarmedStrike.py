@@ -1,18 +1,20 @@
-import Weapon
-from characters import Character
+from typing import TYPE_CHECKING
+from .Weapon import Weapon
 import AreaOfEffect
-from craftingMaterials import LadyBug
+from items.craftingMaterials import Ladybug
+
+if TYPE_CHECKING:
+    from characters import Character
 
 class UnarmedStrike(Weapon):
 
-    aof = AreaOfEffect()
-
     # No added modifiers or bonuses
     def __init__(self):
-        super().__init__(char='👊', craft_cost={LadyBug: 1})
+        super().__init__(char='👊', craft_cost={Ladybug: 1})
 
-    def attack(self, attacker: Character, defender: Character):
-        if self.aof.isMelee(attacker, defender):
+    def attack(self, attacker: 'Character', defender: 'Character'):
+        aof = AreaOfEffect.AreaOfEffect()
+        if aof.isMelee(attacker, defender):
             self.assign_damage(attacker, defender)
             return True
 

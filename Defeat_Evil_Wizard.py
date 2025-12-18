@@ -3,8 +3,13 @@ import re
 import math
 from abc import ABC, abstractmethod
 import time
-import config
-from characters import Character, Warrior, Mage, Dragon, Artificer, EvilWizard
+import universal
+from characters.Character import Character
+from characters.Warrior import Warrior
+from characters.Mage import Mage
+from characters.Dragon import Dragon
+from characters.Artificer import Artificer
+from characters.EvilWizard import EvilWizard
 
 # Function to create player character based on user input
 def create_character():
@@ -53,7 +58,7 @@ def battle(player: Character, wizard: Character):
                 print("Please type either Y or N ONLY")
 
         if choice.group(0).upper() == 'Y':
-            config.MAP.printMap(player)
+            universal.MAP.printMap(player)
             player.move()
         else:
             print("Skipping movement!")
@@ -118,7 +123,7 @@ def battle(player: Character, wizard: Character):
                 print("Please type either Y or N ONLY")
 
         if choice.group(0).upper() == 'Y':
-            config.MAP.printMap(player)
+            universal.MAP.printMap(player)
             player.move()
         else:
             print("Skipping movement!")
@@ -126,7 +131,7 @@ def battle(player: Character, wizard: Character):
 
         # Evil Wizard's turn to attack and regenerate
         if wizard.health > 0:
-            config.MAP.printMap(player)
+            universal.MAP.printMap(player)
             print(f"\n{wizard.name}\'s turn!")
             time.sleep(2)
 
@@ -135,7 +140,7 @@ def battle(player: Character, wizard: Character):
             time.sleep(2)
 
             #Checks if the wizard needs to move
-            if not config.AOF.inRange(wizard.weapon.range, wizard, player):
+            if not universal.AOF.inRange(wizard.weapon.range, wizard, player):
                 print('not in range')
                 wizard.move(player)
                 time.sleep(2)
@@ -144,8 +149,8 @@ def battle(player: Character, wizard: Character):
 
             wizard.attack(player)
             time.sleep(5)
-            config.MAP.updateMap(player)
-            config.MAP.printMap(player)
+            universal.MAP.updateMap(player)
+            universal.MAP.printMap(player)
 
     if player.health <= 0:
         print(f"{player.name} has been defeated!")
@@ -171,7 +176,7 @@ def main():
     print(f"\n\n{player.char} {player.name} VS{wizard.char} {wizard.name} \n\nLET THE BATTLE COMMENCE!!!")
     time.sleep(3)
 
-    config.MAP.createMap(player, wizard)
+    universal.MAP.createMap(player, wizard)
 
     # Start the battle
     battle(player, wizard)

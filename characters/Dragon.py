@@ -1,5 +1,7 @@
-import Character
-from items import Claws, DragonTail, FireBreath
+from .Character import Character
+from items.weapons.Claws import Claws
+from items.weapons.DragonTail import DragonTail
+from items.weapons.FireBreath import FireBreath
 
 # Dragon (inherits from Character)
 class Dragon(Character):

@@ -1,19 +1,20 @@
-import Weapon
-from characters import Character
-from craftingMaterials import Gem, Wood, Sunflower
+from typing import TYPE_CHECKING
+from .Weapon import Weapon
+from items.craftingMaterials import Gem, Wood, Sunflower
 import AreaOfEffect
 
-class ElectroWand(Weapon):
+if TYPE_CHECKING:
+    from characters import Character
 
-    aof = AreaOfEffect()
+class ElectroWand(Weapon):
 
     # Setting Attributes
     def __init__(self):
         super().__init__('⚡', craft_cost={Gem: 1, Wood: 1, Sunflower: 2}, range=16, bonus_damage=13)
 
-    def attack(self, attacker: Character, defender: Character):
-        
-        if self.aof.inRange(self.range, attacker, defender):
+    def attack(self, attacker: 'Character', defender: 'Character'):
+        aof = AreaOfEffect.AreaOfEffect()
+        if aof.inRange(self.range, attacker, defender):
             self.ranged_animation('⚡', attacker=attacker, defender=defender) 
 
             self.assign_damage(attacker, defender, bonus_damage=self.bonus_damage)

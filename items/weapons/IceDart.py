@@ -1,17 +1,19 @@
-import Weapon
-from characters import Character
+from typing import TYPE_CHECKING
+from .Weapon import Weapon
 import AreaOfEffect
-from craftingMaterials import Dirt, Ice
+from items.craftingMaterials import Dirt, Ice
+
+if TYPE_CHECKING:
+    from characters import Character
 
 class IceDart(Weapon):
-
-    aof = AreaOfEffect()
 
     def __init__(self):
         super().__init__(char='❄️ ', craft_cost={Dirt: 1, Ice: 2}, range=10, bonus_damage=4)
 
-    def attack(self, attacker: Character, defender: Character):
-        if self.aof.inRange(attacker, defender):
+    def attack(self, attacker: 'Character', defender: 'Character'):
+        aof = AreaOfEffect.AreaOfEffect()
+        if aof.inRange(self.range, attacker, defender):
             self.ranged_animation(char='❄️ ', attacker=attacker, defender=defender)
             self.assign_damage(attacker, defender, bonus_damage=self.bonus_damage)
             defender.movement = (defender.max_movement * 1.5) * -1

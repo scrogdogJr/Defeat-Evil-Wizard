@@ -2,15 +2,24 @@ import time
 import re
 import math
 from .Character import Character
-import config
-from items import Longsword, GlintstoneStaff, ElectroWand, SpeedPotion, AttackPowerPotion, HealthPotion, InvisibilityPotion, IceDart, UnarmedStrike
-from items import CraftableItem, Weapon, Wood, Stone
+from items.weapons.Longsword import Longsword
+from items.weapons.GlintstoneStaff import GlintstoneStaff
+from items.weapons.ElectroWand import ElectroWand
+from items.potions.SpeedPotion import SpeedPotion
+from items.potions.AttackPowerPotion import AttackPowerPotion
+from items.potions.HealthPotion import HealthPotion
+from items.potions.InvisibilityPotion import InvisibilityPotion
+from items.weapons.IceDart import IceDart
+from items.weapons.UnarmedStrike import UnarmedStrike
+from items.CraftableItem import CraftableItem
+from items.weapons.Weapon import Weapon
+from items.craftingMaterials.Wood import Wood
+from items.craftingMaterials.Stone import Stone
 import AreaOfEffect
 
 # Artificer (inherits from Character)
 class Artificer(Character):
 
-    aof = AreaOfEffect()
     def __init__(self, name):
         super().__init__(name, char='👷', health=170, attack_power=30, weapon=UnarmedStrike(), movement=10)
 
@@ -102,7 +111,7 @@ class Artificer(Character):
         # The keys are the items and the values are how many there are
         for y in range(y_start, y_end + 1):
              for x in range(x_start, x_end + 1):
-                 item =  config.MAP.map_tiles[y][x].item
+                 item =  universal.MAP.map_tiles[y][x].item
                  if item != None:
                     if str(item) not in available_items:
                         available_items[str(item)] = {item}
@@ -157,7 +166,7 @@ class Artificer(Character):
                         self.backpack[type(item_choice)] += 1
 
                     #Subtracts it from the map
-                    config.MAP.map_tiles[item_choice.y][item_choice.x].remove_item()
+                    universal.MAP.map_tiles[item_choice.y][item_choice.x].remove_item()
                 
                     print(f"\n{item_choice.char}    {item_choice} picked up!")
                     count += 1
@@ -168,7 +177,7 @@ class Artificer(Character):
                 print(f"\n{item_choice} not in sight. Please check your spelling and try again.")
                 time.sleep(3)
 
-        config.MAP.printMap(player=self)
+        universal.MAP.printMap(player=self)
         time.sleep(1)
         return True
 

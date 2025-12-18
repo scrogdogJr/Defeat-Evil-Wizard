@@ -1,17 +1,18 @@
-import Weapon
-from characters import Character
+from typing import TYPE_CHECKING
+from .Weapon import Weapon
 import AreaOfEffect
+
+if TYPE_CHECKING:
+    from characters import Character
 
 class FireBreath(Weapon):
 
-    aof = AreaOfEffect()
-
-    #Setting attributes
     def __init__(self):
         super().__init__(range=20, bonus_damage=25)
 
-    def attack(self, attacker: Character, defender: Character):
-        if self.aof.inRange(self.range, attacker=attacker, defender=defender):
+    def attack(self, attacker: 'Character', defender: 'Character'):
+        aof = AreaOfEffect.AreaOfEffect()
+        if aof.inRange(self.range, attacker=attacker, defender=defender):
             self.ranged_animation('🔥', attacker=attacker, defender=defender)
 
             self.assign_damage(attacker, defender, bonus_damage=self.bonus_damage)

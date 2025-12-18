@@ -1,13 +1,11 @@
 import random
-from Defeat_Evil_Wizard.items.craftingMaterials import Stone, Gem, Wood, Herb, Maple, Ice, Water, Ladybug, Dirt, Sunflower
-from characters import Artificer
-import AreaOfEffect
-import MapTile
+from items.craftingMaterials import Stone, Gem, Wood, Herb, Maple, Ice, Water, Ladybug, Dirt, Sunflower
+from characters.Artificer import Artificer
+from AreaOfEffect import AreaOfEffect
+from .MapTile import MapTile
 
 # Map class manages a list of MapTile objects
 class Map:
-
-    aof = AreaOfEffect()
 
     raw_materials = (Stone, Gem, Wood, Herb, Maple, Ice, Water, Ladybug, Dirt, Sunflower, None)
     weights = (7, 0.5, 6.5, 3, 3, 2, 5, 3.5, 5.5, 3, 60)
@@ -19,6 +17,7 @@ class Map:
 
     # Creates and prints the map with the characters. Each map tile's coordinate is stored as the index in the 2D string    
     def createMap(self, player, evil_wizard):
+        aof = AreaOfEffect()
         spaces = '  '
 
         # Makes sure the two characters are not on the same tile
@@ -45,7 +44,7 @@ class Map:
                 item = random.choices(self.raw_materials, self.weights, k=1)
                 if item[0] != None:
                     item[0] = item[0](x, y)
-                showItem = isinstance(player, Artificer) and self.aof.inSight(x, y, player)
+                showItem = isinstance(player, Artificer) and aof.inSight(x, y, player)
 
                 random.choice
                 # Checks if this is the coordinate of the player. If so, puts the character in that MapTile
@@ -72,12 +71,13 @@ class Map:
         print("\n\n")
 
     def updateMap(self, player):
+        aof = AreaOfEffect()
         # Checks if the player is the Artificer. If so, it will check if items are in sight
         if isinstance(player, Artificer):
             for y in range(30):
                 for x in range(30):
                     # Will update the char on the map and show the item if it is in sight of the Artificer
-                    self.map_tiles[y][x].update_char(showItem=self.aof.inSight(x, y, player))
+                    self.map_tiles[y][x].update_char(showItem=aof.inSight(x, y, player))
         else:
             for y in range(30):
                 for x in range(30):

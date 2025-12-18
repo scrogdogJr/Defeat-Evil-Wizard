@@ -1,5 +1,5 @@
-import CraftableItem
-from craftingMaterials import Water, Gem, Herb
+from items.CraftableItem import CraftableItem
+from items.craftingMaterials import Water, Gem, Herb
 
 class InvisibilityPotion(CraftableItem):
     def __init__(self):

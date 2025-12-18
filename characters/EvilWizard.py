@@ -1,7 +1,7 @@
 import time
 import math
 from .Character import Character
-from items import ElectroWand
+from items.weapons.ElectroWand import ElectroWand
 
 # EvilWizard class (inherits from Character)
 class EvilWizard(Character):
